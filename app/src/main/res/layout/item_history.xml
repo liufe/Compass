@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:gravity="center_vertical"
+    android:layout_height="80dp">
+    <TextView
+        android:id="@+id/fileName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        android:text="2019-11-30 03L:59.txt"></TextView>
+<!--    <TextView-->
+<!--        android:id="@+id/fileSize"-->
+<!--        android:gravity="right"-->
+<!--        android:layout_below="@+id/fileName"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:textSize="16sp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        tools:text="420.kb"></TextView>-->
+</RelativeLayout>

@@ -14,5 +14,10 @@
     <string name="sotw_northwest">NW</string>
     <string name="sotw_southeast">SE</string>
     <string name="sotw_southwest">SW</string>
+    <string name="sotw_horizontal">horizontal</string>
+    <string name="sotw_vertical">vertical</string>
+    <string name="sotw_longitude">longitude</string>
+    <string name="sotw_latitude">latitude</string>
+    <string name="history">history</string>
 
 </resources>

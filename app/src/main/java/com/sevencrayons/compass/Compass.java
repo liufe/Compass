@@ -5,10 +5,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.util.Log;
+
 
 public class Compass implements SensorEventListener {
-    private static final String TAG = "Compass";
 
     public interface CompassListener {
         void onNewAzimuth(float azimuth,String horizontal,String vertical);

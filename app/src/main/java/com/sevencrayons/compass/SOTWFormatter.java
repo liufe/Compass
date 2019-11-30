@@ -112,7 +112,6 @@ public class SOTWFormatter {
      * @return
      */
     public static String formatHorizontal(double horizontal){
-        Log.i("AAA", "formatHorizontal: "+horizontal);
         if(horizontal>-0.8&&horizontal<0){
             return "0.0";
         }

@@ -36,4 +36,21 @@
         android:id="@+id/vertical_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"  ></TextView>
+    <TextView
+        android:layout_below="@+id/vertical_label"
+        android:id="@+id/longitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"  ></TextView>
+    <TextView
+        android:layout_below="@+id/longitude"
+        android:id="@+id/latitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"  ></TextView>
+    <Button
+        android:layout_alignParentRight="true"
+        android:layout_margin="16dp"
+        android:onClick="goHistory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/history"></Button>
 </RelativeLayout>
