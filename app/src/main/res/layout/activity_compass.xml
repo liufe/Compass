@@ -25,13 +25,38 @@
         android:contentDescription="@string/compass_hands"
         android:scaleType="fitXY"
         android:src="@drawable/hands" />
-
     <LinearLayout
-        android:layout_marginTop="20dp"
-        android:layout_toLeftOf="@+id/history"
+        android:id="@+id/menu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="120dp"
+
+        android:orientation="horizontal">
+        <Button
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="8dp"
+            android:id="@+id/history"
+            android:onClick="goHistory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/history"></Button>
+        <Button
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="16dp"
+            android:layout_below="@+id/history"
+            android:id="@+id/btnPairedDevices"
+            android:onClick="setting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/setting"></Button>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/root"
+        android:paddingTop="30dp"
+        android:paddingLeft="60dp"
+        android:layout_below="@+id/menu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <TextView
@@ -69,22 +94,5 @@
             tools:text="1111"
             style="@style/style_des"></TextView>
     </LinearLayout>
-    <Button
-        android:layout_alignParentRight="true"
-       android:layout_marginRight="16dp"
-        android:layout_marginBottom="8dp"
-        android:id="@+id/history"
-        android:onClick="goHistory"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/history"></Button>
-    <Button
-        android:layout_alignParentRight="true"
-       android:layout_marginRight="16dp"
-        android:layout_below="@+id/history"
-        android:id="@+id/btnPairedDevices"
-        android:onClick="setting"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/setting"></Button>
+
 </RelativeLayout>

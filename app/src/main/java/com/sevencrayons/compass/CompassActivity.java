@@ -201,7 +201,8 @@ public class CompassActivity extends AppCompatActivity {
                                         stringBuffer.append(c);
                                         return;
                                     }
-                                    edtReceivedMessage.setText(results[47]);
+
+                                    edtReceivedMessage.setText("真航向:"+results[47]);
                                     ///将buffer 清空;
                                     stringBuffer.delete(0,stringBuffer.length());
                                     stringBuffer.append(c);
@@ -291,7 +292,7 @@ public class CompassActivity extends AppCompatActivity {
     private void adjustSotwLabel(float azimuth) {
         String tempSotwLabel = sotwFormatter.format(azimuth);
         XLog.i("sotw:" + tempSotwLabel);
-        sotwLabel.setText(tempSotwLabel);
+        sotwLabel.setText("磁航向:"+tempSotwLabel);
     }
 
     ///设置水平角度

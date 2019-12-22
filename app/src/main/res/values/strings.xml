@@ -20,5 +20,7 @@
     <string name="sotw_latitude">latitude</string>
     <string name="history">history</string>
     <string name="setting">setting</string>
+    <string name="course">真航向</string>
+    <string name="magnetic">磁航向</string>
 
 </resources>
