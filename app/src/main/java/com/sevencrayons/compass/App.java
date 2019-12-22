@@ -28,5 +28,6 @@ public class App extends Application {
                 filePrinter);
         XLog.i("日志初始化完成");
         super.onCreate();
+
     }
 }

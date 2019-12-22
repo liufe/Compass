@@ -19,5 +19,6 @@
     <string name="sotw_longitude">longitude</string>
     <string name="sotw_latitude">latitude</string>
     <string name="history">history</string>
+    <string name="setting">setting</string>
 
 </resources>

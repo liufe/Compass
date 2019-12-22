@@ -2,6 +2,7 @@ package com.sevencrayons.compass;
 
 
 import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -10,23 +11,22 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.elvishew.xlog.XLog;
 
-import java.io.File;
 import java.util.List;
 
 
@@ -34,7 +34,10 @@ public class CompassActivity extends AppCompatActivity {
 
     ///location
     public static final int LOCATION_CODE = 301;
+    public static final String MARK = "$";
     private static final String TAG = "CompassActivity";
+    ///蓝牙数据相关
+    private static final int REQUEST_ENABLE_BT = 1;
     public LocationListener locationListener = new LocationListener() {
         // Provider的状态在可用、暂时不可用和无服务三个状态直接切换时触发此函数
         @Override
@@ -57,8 +60,8 @@ public class CompassActivity extends AppCompatActivity {
             if (location != null) {
                 //不为空,显示地理位置经纬度
                 XLog.i(location.getLongitude() + " " + location.getLatitude() + "");
-                longitude.setText(getString(R.string.sotw_longitude)+":"+location.getLongitude());
-                latitude.setText(getString(R.string.sotw_latitude)+":"+location.getLatitude());
+                longitude.setText(getString(R.string.sotw_longitude) + ":" + location.getLongitude());
+                latitude.setText(getString(R.string.sotw_latitude) + ":" + location.getLatitude());
             }
         }
     };
@@ -69,6 +72,12 @@ public class CompassActivity extends AppCompatActivity {
     private SOTWFormatter sotwFormatter;
     private LocationManager locationManager;
     private String locationProvider = null;
+    ///蓝牙相关
+    private TextView txtIsConnected;
+    private TextView edtReceivedMessage;
+    private BluetoothAdapter mBluetoothAdapter;
+    private ConnectedThread mConnectedThread;
+    private StringBuffer stringBuffer = new StringBuffer();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +85,8 @@ public class CompassActivity extends AppCompatActivity {
         setContentView(R.layout.activity_compass);
 
         sotwFormatter = new SOTWFormatter(this);
-
+        txtIsConnected = findViewById(R.id.connect);
+        edtReceivedMessage = findViewById(R.id.course);
         arrowView = findViewById(R.id.main_image_hands);
         sotwLabel = findViewById(R.id.sotw_label);
         horizontalLabel = findViewById(R.id.horizontal_label);
@@ -100,11 +110,7 @@ public class CompassActivity extends AppCompatActivity {
         compass.stop();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        compass.start();
-    }
+
 
     @Override
     protected void onStop() {
@@ -123,19 +129,19 @@ public class CompassActivity extends AppCompatActivity {
                     try {
                         List<String> providers = locationManager.getProviders(true);
                         if (providers.contains(LocationManager.NETWORK_PROVIDER)) {
-//如果是Network
+                        //如果是Network
                             locationProvider = LocationManager.NETWORK_PROVIDER;
                         } else if (providers.contains(LocationManager.GPS_PROVIDER)) {
-//如果是GPS
+                        //如果是GPS
                             locationProvider = LocationManager.GPS_PROVIDER;
                         }
-//监视地理位置变化
+                        //监视地理位置变化
                         locationManager.requestLocationUpdates(locationProvider, 3000, 1, locationListener);
                         Location location = locationManager.getLastKnownLocation(locationProvider);
                         if (location != null) {
                             XLog.i("Permissions granted:     longitude" + location.getLongitude() + " latitude:" + location.getLatitude() + "");
-                            longitude.setText(getString(R.string.sotw_longitude)+":"+location.getLongitude());
-                            latitude.setText(getString(R.string.sotw_latitude)+":"+location.getLatitude());
+                            longitude.setText(getString(R.string.sotw_longitude) + ":" + location.getLongitude());
+                            latitude.setText(getString(R.string.sotw_latitude) + ":" + location.getLatitude());
                         }
                     } catch (SecurityException e) {
                         e.printStackTrace();
@@ -154,7 +160,70 @@ public class CompassActivity extends AppCompatActivity {
         super.onDestroy();
         locationManager.removeUpdates(locationListener);
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        compass.start();
+        //回到主界面后检查是否已成功连接蓝牙设备
+        if (BluetoothUtils.INSTANCE.getBluetoothSocket() == null || mConnectedThread != null) {
+            txtIsConnected.setText("未连接");
+            return;
+        }
 
+        txtIsConnected.setText("已连接");
+
+        //已连接蓝牙设备，则接收数据，并显示到接收区文本框
+        Handler handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what) {
+                    case 1:
+                        byte[] buffer = (byte[]) msg.obj;
+                        int length = msg.arg1;
+                        //  StringBuffer sb = new StringBuffer();
+                        for (int i=0; i < length; i++) {
+                            char c = (char) buffer[i];
+                            String temp = String.valueOf(c);
+                            if(temp.equals(MARK)){
+                                ///包头的位置
+                                if(stringBuffer.toString().isEmpty()){
+                                    stringBuffer.append(c);
+                                }else {
+                                    String total =stringBuffer.toString();
+                                    if (total.length()<6){
+                                        stringBuffer.append(c);
+                                        return;
+                                    }
+                                    String split = String.valueOf(total.charAt(6));
+                                    String[] results= total.split(split);
+                                    if (total.length()<61){
+                                        stringBuffer.append(c);
+                                        return;
+                                    }
+                                    edtReceivedMessage.setText(results[47]);
+                                    ///将buffer 清空;
+                                    stringBuffer.delete(0,stringBuffer.length());
+                                    stringBuffer.append(c);
+                                }
+
+                            }else {
+                                ///添加到缓冲区，证明数据没有接受完
+                                stringBuffer.append(c);
+                            }
+                        }
+
+                        break;
+                }
+
+            }
+        };
+
+        //启动蓝牙数据收发线程
+        mConnectedThread = new ConnectedThread(BluetoothUtils.INSTANCE.getBluetoothSocket(), handler);
+        mConnectedThread.start();
+
+    }
     private void getLocation() {
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 //获取所有可用的位置提供器
@@ -176,10 +245,10 @@ public class CompassActivity extends AppCompatActivity {
                 Location location = locationManager.getLastKnownLocation(locationProvider);
                 if (location != null) {
 //输入经纬度
-    XLog.i("longitude" + location.getLongitude() + " latitude:" + location.getLatitude() + "");
+                    XLog.i("longitude" + location.getLongitude() + " latitude:" + location.getLatitude() + "");
                     Toast.makeText(this, location.getLongitude() + " " + location.getLatitude() + "", Toast.LENGTH_SHORT).show();
-                    longitude.setText(getString(R.string.sotw_longitude)+":"+location.getLongitude());
-                    latitude.setText(getString(R.string.sotw_latitude)+":"+location.getLatitude());
+                    longitude.setText(getString(R.string.sotw_longitude) + ":" + location.getLongitude());
+                    latitude.setText(getString(R.string.sotw_latitude) + ":" + location.getLatitude());
                 }
             }
         } else {
@@ -189,8 +258,8 @@ public class CompassActivity extends AppCompatActivity {
             if (location != null) {
                 //不为空,显示地理位置经纬度
                 XLog.i("longitude" + location.getLongitude() + " latitude:" + location.getLatitude() + "");
-                longitude.setText(getString(R.string.sotw_longitude)+":"+location.getLongitude());
-                latitude.setText(getString(R.string.sotw_latitude)+":"+location.getLatitude());
+                longitude.setText(getString(R.string.sotw_longitude) + ":" + location.getLongitude());
+                latitude.setText(getString(R.string.sotw_latitude) + ":" + location.getLatitude());
             }
         }
     }
@@ -261,8 +330,31 @@ public class CompassActivity extends AppCompatActivity {
      * @param view
      */
     public void goHistory(View view) {
-        Intent intent = new Intent(this,HistoryActivity.class);
+        Intent intent = new Intent(this, HistoryActivity.class);
         startActivity(intent);
     }
 
+    /**
+     * PairedDevices
+     *
+     * @param view
+     */
+    public void setting(View view) {
+        // 获取蓝牙适配器
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null) {
+            Toast.makeText(getApplicationContext(), "该设备不支持蓝牙", Toast.LENGTH_SHORT).show();
+        }
+
+        //请求开启蓝牙
+        if (!mBluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+
+        //进入蓝牙设备连接界面
+        Intent intent = new Intent();
+        intent.setClass(getApplicationContext(), DevicesListActivity.class);
+        startActivity(intent);
+    }
 }

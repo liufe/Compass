@@ -13,7 +13,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import com.elvishew.xlog.XLog
 import kotlinx.android.synthetic.main.activity_history.*
 import java.io.File
 import java.io.FilenameFilter
